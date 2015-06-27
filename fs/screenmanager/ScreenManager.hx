@@ -1,10 +1,5 @@
 package fs.screenmanager;
 
-import fs.screenmanager.console.Console;
-import fs.screenmanager.events.GameEvent;
-import fs.screenmanager.events.GameScreenEvent;
-import fs.screenmanager.transitions.FadeTransition;
-import fs.screenmanager.transitions.Transition;
 import flash.display.Graphics;
 import flash.display.Sprite;
 import flash.events.Event;
@@ -12,7 +7,12 @@ import flash.events.EventDispatcher;
 import flash.events.KeyboardEvent;
 import flash.events.MouseEvent;
 import flash.events.TouchEvent;
+import fs.screenmanager.console.Console;
+import fs.screenmanager.events.GameEvent;
 import fs.screenmanager.events.GameEvents;
+import fs.screenmanager.events.GameScreenEvent;
+import fs.screenmanager.transitions.FadeTransition;
+import fs.screenmanager.transitions.Transition;
 
 
 enum State
@@ -61,7 +61,7 @@ class ScreenManager
 	/*
 	 * Event dispatcher, fires all the logic events.
 	 * */
-	public static var EVENT_DISPATCHER : EventDispatcher;
+	public static var eventDispatcher : EventDispatcher;
 	
 	/*
 	 * Screen container.
@@ -96,10 +96,10 @@ class ScreenManager
 	
 	private static var auxScreens : Array<GameScreen>;
 	
-	public static function InitInstance(eventDisp : EventDispatcher,gc : Sprite,fc : Sprite, screenWidth : Float, screenHeight : Float, fadeColor : Int): ScreenManager
+	public static function InitInstance(mainSprite : Sprite,screenWidth : Float, screenHeight : Float, fadeColor : Int): ScreenManager
 	{
 		if (instance == null)
-			instance = new ScreenManager(eventDisp,gc,fc,screenWidth,screenHeight,fadeColor);
+			instance = new ScreenManager(mainSprite,screenWidth,screenHeight,fadeColor);
 		
 		return instance;
 	}
@@ -119,28 +119,61 @@ class ScreenManager
 	/*
 	 * Constructor
 	 */
-	private function new(eventDisp : EventDispatcher,gc : Sprite,fc : Sprite,screenWidth : Float, screenHeight : Float, fadeColor : Int) 
+	private function new(mainSprite : Sprite,screenWidth : Float, screenHeight : Float, fadeColor : Int) 
 	{
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
 		this.fadeColor = fadeColor;
 		screens = new List<GameScreen>();
-		EVENT_DISPATCHER = eventDisp;
-		gameContainer = gc;
-		fixedContainer = fc;
 		state = State.Run;
 		
-		transition = new FadeTransition(EVENT_DISPATCHER,fixedContainer,screenWidth,screenHeight,fadeColor,TRANSITION_TIME);
+		//Event dispatcher
+		eventDispatcher = new EventDispatcher();
+		//Game Container
+		gameContainer = new Sprite();
+		//Fixed COntainer
+		fixedContainer = new Sprite();
 		
-		EVENT_DISPATCHER.addEventListener(Transition.EVENT_STARTED, OnTransitionChange);
-		EVENT_DISPATCHER.addEventListener(Transition.EVENT_ENDED, OnTransitionChange);
-		EVENT_DISPATCHER.addEventListener(Transition.EVENT_CHANGE_SCREEN, OnTransitionChange);
-		EVENT_DISPATCHER.addEventListener(GameEvents.EVENT_TRACE_SCREENS, HandleEvent);
-		EVENT_DISPATCHER.addEventListener(GameEvents.EVENT_SCREEN_LOADED, HandleEvent);
-		EVENT_DISPATCHER.addEventListener(GameEvents.EVENT_SCREEN_EXITED, HandleEvent);
-		EVENT_DISPATCHER.addEventListener(GameScreen.EVENT_EXECUTE_FUNCTION, HandleEvent);
+		//Adding containers to the main sprite (class Main)
+		mainSprite.addChild(gameContainer);
+		mainSprite.addChild(fixedContainer);
+		
+		transition = new FadeTransition(eventDispatcher,fixedContainer,screenWidth,screenHeight,fadeColor,TRANSITION_TIME);
+		
+		eventDispatcher.addEventListener(Transition.EVENT_STARTED, OnTransitionChange);
+		eventDispatcher.addEventListener(Transition.EVENT_ENDED, OnTransitionChange);
+		eventDispatcher.addEventListener(Transition.EVENT_CHANGE_SCREEN, OnTransitionChange);
+		eventDispatcher.addEventListener(GameEvents.EVENT_TRACE_SCREENS, HandleEvent);
+		eventDispatcher.addEventListener(GameEvents.EVENT_SCREEN_LOADED, HandleEvent);
+		eventDispatcher.addEventListener(GameEvents.EVENT_SCREEN_EXITED, HandleEvent);
+		eventDispatcher.addEventListener(GameScreen.EVENT_EXECUTE_FUNCTION, HandleEvent);
 		
 		auxScreens = new Array<GameScreen>();
+	}
+	
+	public static function GetGameContainer() : Sprite
+	{
+		return gameContainer;
+	}
+	
+	public static function GetFixedContainer() : Sprite
+	{
+		return fixedContainer;
+	}
+	
+	public static function GetEventDispatcher() : EventDispatcher
+	{
+		return eventDispatcher;
+	}
+	
+	public static function AddEvent(event : String, handler : Dynamic -> Void) : Void
+	{
+		eventDispatcher.addEventListener(event, handler);
+	}
+	
+	public static function RemoveEvent(event : String, handler : Dynamic -> Void) : Void
+	{
+		eventDispatcher.removeEventListener(event, handler);
 	}
 	
 	/*

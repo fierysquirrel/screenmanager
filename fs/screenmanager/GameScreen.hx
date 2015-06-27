@@ -93,7 +93,7 @@ class GameScreen extends Sprite implements IGameScreen
 		textFields = new Map<String,TextField>();
 		sprites = new Map<String,TileSprite>();
 		
-		eventDispatcher = ScreenManager.EVENT_DISPATCHER;
+		eventDispatcher = ScreenManager.GetEventDispatcher();
 	}
 	
 	public function LoadContent() : Void
