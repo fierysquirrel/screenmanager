@@ -11,7 +11,6 @@ import fs.screenmanager.console.Console;
 import fs.screenmanager.events.GameEvent;
 import fs.screenmanager.events.GameEvents;
 import fs.screenmanager.events.GameScreenEvent;
-import fs.screenmanager.transitions.FadeTransition;
 import fs.screenmanager.transitions.Transition;
 
 
@@ -37,11 +36,6 @@ class ScreenManager
 	 * Animation ended event.
 	 * */
 	static public var NAME : String = "SCREEN_MANAGER";
-	
-	/*
-	 * Transition time in seconds.
-	 * */
-	static public var TRANSITION_TIME : Float = 0.5;
 	
 	/*
 	 * Screen manager instance.
@@ -78,28 +72,18 @@ class ScreenManager
 	 */
 	private static var state : State;
 	
-	private var screenWidth : Float;
-	
-	private var screenHeight : Float;
-	
-	private var fadeColor : Int;
-	
-	/*
-	 * .
-	 */
-	//private static var auxScreen : GameScreen;
-	
 	/*
 	 * Transition that will be applied when the screen is added or removed.
 	 */
 	private static var transition : Transition;
 	
+	
 	private static var auxScreens : Array<GameScreen>;
 	
-	public static function InitInstance(mainSprite : Sprite,screenWidth : Float, screenHeight : Float, fadeColor : Int): ScreenManager
+	public static function InitInstance(mainSprite : Sprite): ScreenManager
 	{
 		if (instance == null)
-			instance = new ScreenManager(mainSprite,screenWidth,screenHeight,fadeColor);
+			instance = new ScreenManager(mainSprite);
 		
 		return instance;
 	}
@@ -119,11 +103,8 @@ class ScreenManager
 	/*
 	 * Constructor
 	 */
-	private function new(mainSprite : Sprite,screenWidth : Float, screenHeight : Float, fadeColor : Int) 
+	private function new(mainSprite : Sprite) 
 	{
-		this.screenWidth = screenWidth;
-		this.screenHeight = screenHeight;
-		this.fadeColor = fadeColor;
 		screens = new List<GameScreen>();
 		state = State.Run;
 		
@@ -137,8 +118,6 @@ class ScreenManager
 		//Adding containers to the main sprite (class Main)
 		mainSprite.addChild(gameContainer);
 		mainSprite.addChild(fixedContainer);
-		
-		transition = new FadeTransition(eventDispatcher,fixedContainer,screenWidth,screenHeight,fadeColor,TRANSITION_TIME);
 		
 		eventDispatcher.addEventListener(Transition.EVENT_STARTED, OnTransitionChange);
 		eventDispatcher.addEventListener(Transition.EVENT_ENDED, OnTransitionChange);
@@ -194,6 +173,7 @@ class ScreenManager
 	{
 		if (transition != null)
 			transition.Update(gameTime);
+			
 		switch(state)
 		{
 			case State.AddScreen:
@@ -341,7 +321,6 @@ class ScreenManager
 			if (currentScreen != null)
 			{
 				currentScreen.SetActive(false);
-				//trace("deactivate");
 			}
 			
 			screens.add(screen);
@@ -380,10 +359,13 @@ class ScreenManager
 	 * Loads a screen if it is a "Popup screen", 
 	 * if it's not, then clean the screens queue and load the new one.
 	 */
-	public static function LoadScreen(screen : GameScreen): Void
+	public static function LoadScreen(screen : GameScreen, newTransition : Transition = null): Void
 	{
 		if (screen != null)
 		{
+			//Update new transition if there's any
+			transition = newTransition;
+			
 			if (screen.IsPopup())
 			{
 				if (auxScreens.length <= 0)
@@ -392,14 +374,28 @@ class ScreenManager
 					auxScreens.push(screen);
 			}
 			else
-			{
-				auxScreens.push(screen);
-				state = State.AddScreen;
-				transition.Start();
-				
-				//Deactivate screen
-				if(currentScreen != null)
-					currentScreen.SetActive(false);
+			{	
+				//TODO: Check and test this
+				//There is no transition
+				if (transition == null)
+				{
+					//The screen is not a popup, remove all screens
+					for (s in screens)
+						RemoveScreen(s);
+						
+					screens.clear();
+					state = State.Run;
+					AddScreen(screen);
+				}
+				else 
+				{
+					auxScreens.push(screen);
+					state = State.AddScreen;
+					transition.Start();
+					//Deactivate screen
+					if(currentScreen != null)
+						currentScreen.SetActive(false);
+				}
 			}
 		}
 		else
@@ -410,10 +406,13 @@ class ScreenManager
 	 * Loads a screen if it is a "Popup screen", 
 	 * if it's not, then clean the screens queue and load the new one.
 	 */
-	public static function ExitScreen(screen : GameScreen): Void
+	public static function ExitScreen(screen : GameScreen, newTransition : Transition = null): Void
 	{
 		if (screen != null)
 		{
+			//Update new transition if there's any
+			transition = newTransition;
+			
 			if (!screen.IsExiting())
 			{
 				screen.Exit();
@@ -425,7 +424,8 @@ class ScreenManager
 					//auxScreen = screen;
 					auxScreens.push(screen);
 					state = State.RemoveScreen;
-					transition.Start();
+					if(transition != null)
+						transition.Start();
 				}
 			}
 		}
