@@ -3,10 +3,4 @@
 	<haxelib name="openfl" />
 	<haxelib name="actuate" />
 	<haxelib name="tilelayer" />
-	<!--Fiery Squirrel Modules-->
-	<haxelib name="helper" />
-	<haxelib name="ui" />
-	<haxelib name="graphicmanager" />
-	<haxelib name="languagemanager" />
-	<haxelib name="textmanager" />
 </project>

@@ -327,6 +327,8 @@ class ScreenManager
 			gameContainer.addChild(screen);
 			currentScreen = screen;
 			screen.LoadContent();
+			//This was done to preserve the order on the screen
+			screen.AddElementsToRender();
 		}
 		else
 			throw "Error: the screen cannot be null";

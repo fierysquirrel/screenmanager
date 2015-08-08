@@ -1,7 +1,6 @@
 package fs.screenmanager;
 
 import aze.display.SparrowTilesheet;
-import aze.display.TileLayer;
 import aze.display.TileSprite;
 import flash.display.Graphics;
 import flash.display.Sprite;
@@ -11,10 +10,11 @@ import flash.events.MouseEvent;
 import flash.events.TouchEvent;
 import flash.geom.Point;
 import flash.text.TextField;
-import openfl.Assets;
-
-import fs.screenmanager.events.GameEvent;
 import fs.screenmanager.events.FunctionEvent;
+import fs.screenmanager.events.GameEvent;
+import openfl.Assets;
+import aze.display.TileLayer.TileBase;
+
 
 /**
  * Concrete class that represents a game screen logic.
@@ -68,29 +68,22 @@ class GameScreen extends Sprite implements IGameScreen
 	/*
 	 * Layers.
 	 */
-	private var layers : Map<String,TileLayer>;
-	
-	private var textFields : Map<String,TextField>;
+	private var layers : Map<String,Layer>;
 	
 	private var popupVeil : Sprite;
 	
-	private var view : String;
-	
-	
-	public function new(name : String = "",x : Float = 0,y : Float = 0,view : String = "",isPopup : Bool = false) 
+	public function new(name : String = "",x : Float = 0,y : Float = 0,isPopup : Bool = false) 
 	{	
 		super();
 		
 		this.x = x;
 		this.y = y;
 		this.name = name;
-		this.view = view;
 		this.isPopup = isPopup;
 		
 		isExit = false;
 		isActive = true;
-		layers = new Map<String,TileLayer>();
-		textFields = new Map<String,TextField>();
+		layers = new Map<String,Layer>();
 		sprites = new Map<String,TileSprite>();
 		
 		eventDispatcher = ScreenManager.GetEventDispatcher();
@@ -106,37 +99,6 @@ class GameScreen extends Sprite implements IGameScreen
 			popupVeil.graphics.endFill();
 			popupVeil.alpha = Globals.VEIL_ALPHA;
 			addChild(popupVeil);*/
-		}
-		
-		ParseView(view);
-	}
-	
-	private function ParseViewHeader(xml : Xml) : Void
-	{}
-	
-	private function ParseViewBody(xml : Xml) : Void
-	{}
-	
-	private function ParseView(view : String) :Void
-	{
-		var str : String;
-		var xml : Xml;
-		
-		try
-		{
-			if (view != "")
-			{
-				str = Assets.getText(view);
-				xml = Xml.parse(str).firstElement();
-				
-				ParseViewHeader(xml);
-				for (e in xml.elements())
-					ParseViewBody(e);
-			}
-		}
-		catch (e : String)
-		{
-			trace(e);
 		}
 	}
 	
@@ -209,6 +171,8 @@ class GameScreen extends Sprite implements IGameScreen
 	 */
 	public function Draw(graphics:Graphics) : Void
 	{
+		for (l in layers)
+			l.render();
 	}
 	
 	/*
@@ -368,13 +332,16 @@ class GameScreen extends Sprite implements IGameScreen
 	}
 	
 	private function HandleCursorDown(cursorPos : Point,cursorId : Int) : Void
-	{}
+	{
+	}
 	
 	private function HandleCursorMove(cursorPos : Point, cursorId : Int) : Void
-	{}
+	{
+	}
 	
 	private function HandleCursorUp(cursorPos : Point, cursorId : Int) : Void
-	{}
+	{
+	}
 	
 	/*
 	 * Exits this screen.
@@ -417,15 +384,6 @@ class GameScreen extends Sprite implements IGameScreen
 			layers.get(key).removeChild(element);
 	}
 	
-	public function AddText(key : String,text : TextField) : Void
-	{
-		if (!textFields.exists(key))
-		{
-			textFields.set(key, text);
-			addChild(text);
-		}
-	}
-	
 	public function HandleBackButtonPressed(e : Event) : Void
 	{
 	}
@@ -434,13 +392,40 @@ class GameScreen extends Sprite implements IGameScreen
 	{
 	}
 	
-	public function AddLayer(key : String,element : TileLayer) : Void
+	public function AddLayer(key : String,element : Layer) : Void
 	{
 		if (!layers.exists(key))
 		{
 			layers.set(key, element);
-			addChild(element.view);
+			//addChild(element.view);
 		}
+	}
+	
+	public function AddElementsToRender() : Void
+	{
+		var orderedLayers : Array<Layer>;
+		
+		orderedLayers = new Array<Layer>();
+		
+		for (l in layers)
+			orderedLayers.push(l);
+		
+		//Order
+		orderedLayers.sort(SortLayer);
+		
+		//Layers
+		for (l in orderedLayers)
+			addChild(l.view);
+	}
+	
+	private function SortLayer(x : Layer,y : Layer) : Int
+	{
+		if (x.GetOrder() == y.GetOrder())
+			return 0;
+		else if (x.GetOrder() > y.GetOrder())
+			return 1;
+		else
+			return -1;
 	}
 	
 	public function RemoveLayer(key : String) : Void
@@ -452,7 +437,7 @@ class GameScreen extends Sprite implements IGameScreen
 		}
 	}
 	
-	public function GetLayer(key : String) : TileLayer
+	public function GetLayer(key : String) : Layer
 	{
 		return layers.get(key);
 	}
