@@ -376,7 +376,7 @@ class ScreenManager
 					auxScreens.push(screen);
 			}
 			else
-			{	
+			{		
 				//TODO: Check and test this
 				//There is no transition
 				if (transition == null)
@@ -454,6 +454,7 @@ class ScreenManager
 							RemoveScreen(s);
 							
 						screens.clear();
+						
 						while (auxScreens.length > 0)
 							AddScreen(auxScreens.shift());
 					}

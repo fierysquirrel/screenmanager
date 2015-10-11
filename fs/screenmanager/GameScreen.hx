@@ -70,7 +70,7 @@ class GameScreen extends Sprite implements IGameScreen
 	 */
 	private var layers : Map<String,Layer>;
 	
-	private var popupVeil : Sprite;
+	private var backgroundColor : BackgroundColor;
 	
 	public function new(name : String = "",x : Float = 0,y : Float = 0,isPopup : Bool = false) 
 	{	
@@ -87,19 +87,20 @@ class GameScreen extends Sprite implements IGameScreen
 		sprites = new Map<String,TileSprite>();
 		
 		eventDispatcher = ScreenManager.GetEventDispatcher();
+		
+		//Background
+		InitBackgroundColor();
+	}
+	
+	private function InitBackgroundColor() 
+	{
+		//Re-write this function where you want to add a background color
+		if(backgroundColor != null)
+			addChild(backgroundColor);
 	}
 	
 	public function LoadContent() : Void
 	{
-		if (isPopup)
-		{
-			/*popupVeil = new Sprite();
-			popupVeil.graphics.beginFill(Globals.VEIL_COLOR);
-			popupVeil.graphics.drawRect(0,0,Globals.SCREEN_WIDTH,Globals.SCREEN_HEIGHT);
-			popupVeil.graphics.endFill();
-			popupVeil.alpha = Globals.VEIL_ALPHA;
-			addChild(popupVeil);*/
-		}
 	}
 	
 	public function Clean() : Void
@@ -114,6 +115,11 @@ class GameScreen extends Sprite implements IGameScreen
 		
 		while (numChildren > 0)
 			removeChildAt(0);
+			
+		if (backgroundColor != null)
+			removeChild(backgroundColor);
+			
+		//trace("SI SE EJECUTA");
 	}
 	
 	/*
