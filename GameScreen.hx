@@ -1,4 +1,4 @@
-package fs.screenmanager;
+package;
 
 import aze.display.SparrowTilesheet;
 import aze.display.TileSprite;
@@ -10,11 +10,10 @@ import flash.events.MouseEvent;
 import flash.events.TouchEvent;
 import flash.geom.Point;
 import flash.text.TextField;
-import fs.screenmanager.events.FunctionEvent;
-import fs.screenmanager.events.GameEvent;
 import openfl.Assets;
 import aze.display.TileLayer.TileBase;
-
+import screenevents.*;
+import flash.ui.Keyboard;
 
 /**
  * Concrete class that represents a game screen logic.
@@ -418,7 +417,7 @@ class GameScreen extends Sprite implements IGameScreen
 		
 		//Order
 		orderedLayers.sort(SortLayer);
-		
+			
 		//Layers
 		for (l in orderedLayers)
 			addChild(l.view);

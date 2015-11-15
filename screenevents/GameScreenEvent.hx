@@ -1,5 +1,6 @@
-package fs.screenmanager.events;
+package screenevents;
 
+import screentransitions.*;
 
 /**
  * ...
@@ -13,11 +14,14 @@ class GameScreenEvent extends GameEvent
 	 * */
 	private var screen : GameScreen;
 	
-	public function new(type:String,screen : GameScreen, bubbles:Bool=false, cancelable:Bool=false) 
+	private var transition : Transition;
+	
+	public function new(type:String,screen : GameScreen,transition : Transition = null, bubbles:Bool=false, cancelable:Bool=false) 
 	{
 		super(type,ScreenManager.NAME,bubbles, cancelable);
 		
 		this.screen = screen;
+		this.transition = transition;
 	}
 	
 	/*
@@ -26,5 +30,10 @@ class GameScreenEvent extends GameEvent
 	public function GetScreen() : GameScreen
 	{
 		return screen;
+	}
+	
+	public function GetTransition() : Transition
+	{
+		return transition;
 	}
 }

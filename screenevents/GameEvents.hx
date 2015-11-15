@@ -1,4 +1,4 @@
-package fs.screenmanager.events;
+package screenevents;
 
 /**
  * ...

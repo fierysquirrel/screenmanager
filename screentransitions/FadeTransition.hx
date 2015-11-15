@@ -1,9 +1,7 @@
-package fs.screenmanager.transitions;
+package screentransitions;
 
-import fs.screenmanager.events.GameEvent;
 import flash.display.Sprite;
 import flash.events.EventDispatcher;
-
 
 enum State
 {

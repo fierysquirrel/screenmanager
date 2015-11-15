@@ -1,9 +1,8 @@
-package fs.screenmanager.transitions;
+package screentransitions;
 
 import flash.display.Graphics;
 import flash.display.Sprite;
 import flash.events.EventDispatcher;
-import fs.screenmanager.events.GameEvent;
 
 /**
  * ...

@@ -1,4 +1,4 @@
-package fs.screenmanager;
+package;
 
 import flash.display.Graphics;
 import flash.display.Sprite;
@@ -7,14 +7,11 @@ import flash.events.EventDispatcher;
 import flash.events.KeyboardEvent;
 import flash.events.MouseEvent;
 import flash.events.TouchEvent;
-import fs.screenmanager.console.Console;
-import fs.screenmanager.events.GameEvent;
-import fs.screenmanager.events.GameEvents;
-import fs.screenmanager.events.GameScreenEvent;
-import fs.screenmanager.transitions.Transition;
+import screentransitions.*;
+import screenevents.*;
+import flash.ui.Keyboard;
 
-
-enum State
+enum ScreenState
 {
 	AddScreen;
 	RemoveScreen;
@@ -60,24 +57,21 @@ class ScreenManager
 	/*
 	 * Screen container.
 	 */
-	private static var gameContainer : Sprite;
-	
-	/*
-	 * Screen container.
-	 */
-	private static var fixedContainer : Sprite;
+	private static var container : Sprite;
 	
 	/*
 	 * Screen manager state.
 	 */
-	private static var state : State;
+	private static var state : ScreenState;
 	
 	/*
 	 * Transition that will be applied when the screen is added or removed.
 	 */
 	private static var transition : Transition;
 	
-	
+	/*
+	 * 
+	 * */
 	private static var auxScreens : Array<GameScreen>;
 	
 	public static function InitInstance(mainSprite : Sprite): ScreenManager
@@ -102,22 +96,16 @@ class ScreenManager
 	
 	/*
 	 * Constructor
+	 * Container is a Sprite where all the elements will be added.
 	 */
-	private function new(mainSprite : Sprite) 
+	private function new(cont : Sprite) 
 	{
+		container = cont;
 		screens = new List<GameScreen>();
-		state = State.Run;
+		state = ScreenState.Run;
 		
 		//Event dispatcher
 		eventDispatcher = new EventDispatcher();
-		//Game Container
-		gameContainer = new Sprite();
-		//Fixed COntainer
-		fixedContainer = new Sprite();
-		
-		//Adding containers to the main sprite (class Main)
-		mainSprite.addChild(gameContainer);
-		mainSprite.addChild(fixedContainer);
 		
 		eventDispatcher.addEventListener(Transition.EVENT_STARTED, OnTransitionChange);
 		eventDispatcher.addEventListener(Transition.EVENT_ENDED, OnTransitionChange);
@@ -130,14 +118,9 @@ class ScreenManager
 		auxScreens = new Array<GameScreen>();
 	}
 	
-	public static function GetGameContainer() : Sprite
+	public static function GetContainer() : Sprite
 	{
-		return gameContainer;
-	}
-	
-	public static function GetFixedContainer() : Sprite
-	{
-		return fixedContainer;
+		return container;
 	}
 	
 	public static function GetEventDispatcher() : EventDispatcher
@@ -176,11 +159,11 @@ class ScreenManager
 			
 		switch(state)
 		{
-			case State.AddScreen:
+			case ScreenState.AddScreen:
 				//transition.Update(gameTime);
-			case State.RemoveScreen:
+			case ScreenState.RemoveScreen:
 				//transition.Update(gameTime);
-			case State.Run:
+			case ScreenState.Run:
 				if (currentScreen != null)
 					currentScreen.Update(gameTime);
 		}
@@ -215,21 +198,27 @@ class ScreenManager
 	 */
 	public static function HandleEvent(event : GameEvent)
 	{
-		switch(event.type)
+		var transition : Transition;
+		if (event != null)
 		{
-			case GameEvents.EVENT_TRACE_SCREENS:
-				TraceScreens();
-			case GameEvents.EVENT_SCREEN_LOADED:
-				var e : GameScreenEvent = cast(event, GameScreenEvent);
-				LoadScreen(e.GetScreen());
-			case GameEvents.EVENT_SCREEN_EXITED:
-				ExitScreen(currentScreen);
-			default:
-				if (currentScreen != null)
-				{
-					if(currentScreen.GetName() == event.GetSource() || event.GetSource() == Console.NAME)
-						currentScreen.HandleEvent(event);
-				}
+			switch(event.type)
+			{
+				case GameEvents.EVENT_TRACE_SCREENS:
+					TraceScreens();
+				case GameEvents.EVENT_SCREEN_LOADED:
+					var e : GameScreenEvent = cast(event, GameScreenEvent);
+					
+					transition = e.GetTransition();
+					LoadScreen(e.GetScreen(),transition);
+				case GameEvents.EVENT_SCREEN_EXITED:
+					ExitScreen(currentScreen);
+				default:
+					if (currentScreen != null)
+					{
+						//if(currentScreen.GetName() == event.GetSource() || event.GetSource() == Console.NAME)
+						//	currentScreen.HandleEvent(event);
+					}
+			}
 		}
 	}
 	
@@ -247,9 +236,21 @@ class ScreenManager
 				switch(event.type)
 				{
 					case KeyboardEvent.KEY_DOWN:
-						currentScreen.HandleKeyDownEvent(event.keyCode);
+						if (event.keyCode == Keyboard.ESCAPE)
+						{
+							currentScreen.HandleBackButtonPressed(event);
+							event.stopPropagation();
+						}
+						else
+							currentScreen.HandleKeyDownEvent(event.keyCode);
 					case KeyboardEvent.KEY_UP:
-						currentScreen.HandleKeyUpEvent(event.keyCode);
+						if (event.keyCode == Keyboard.ESCAPE)
+						{
+							currentScreen.HandleBackButtonReleased(event);
+							event.stopPropagation();
+						}
+						else	
+							currentScreen.HandleKeyUpEvent(event.keyCode);
 				}
 			}
 		}
@@ -324,7 +325,7 @@ class ScreenManager
 			}
 			
 			screens.add(screen);
-			gameContainer.addChild(screen);
+			container.addChild(screen);
 			currentScreen = screen;
 			screen.LoadContent();
 			//This was done to preserve the order on the screen
@@ -344,7 +345,7 @@ class ScreenManager
 			if (!screens.isEmpty())
 			{
 				screen.Clean();
-				gameContainer.removeChild(screen);
+				container.removeChild(screen);
 				screens.remove(screen);
 				currentScreen = screens.last();
 				
@@ -366,7 +367,8 @@ class ScreenManager
 		if (screen != null)
 		{
 			//Update new transition if there's any
-			transition = newTransition;
+			if(newTransition != null)
+				transition = newTransition;
 			
 			if (screen.IsPopup())
 			{
@@ -379,20 +381,20 @@ class ScreenManager
 			{		
 				//TODO: Check and test this
 				//There is no transition
-				if (transition == null)
+				if (newTransition == null)
 				{
 					//The screen is not a popup, remove all screens
 					for (s in screens)
 						RemoveScreen(s);
 						
 					screens.clear();
-					state = State.Run;
+					state = ScreenState.Run;
 					AddScreen(screen);
 				}
 				else 
 				{
 					auxScreens.push(screen);
-					state = State.AddScreen;
+					state = ScreenState.AddScreen;
 					transition.Start();
 					//Deactivate screen
 					if(currentScreen != null)
@@ -425,7 +427,7 @@ class ScreenManager
 				{
 					//auxScreen = screen;
 					auxScreens.push(screen);
-					state = State.RemoveScreen;
+					state = ScreenState.RemoveScreen;
 					if(transition != null)
 						transition.Start();
 				}
@@ -442,9 +444,9 @@ class ScreenManager
 	{			
 		switch(state)
 		{
-			case State.AddScreen:
+			case ScreenState.AddScreen:
 				if (event.type == Transition.EVENT_ENDED)
-					state = State.Run;
+					state = ScreenState.Run;
 				else if (event.type == Transition.EVENT_CHANGE_SCREEN)
 				{	
 					if (auxScreens.length > 0)
@@ -459,15 +461,15 @@ class ScreenManager
 							AddScreen(auxScreens.shift());
 					}
 				}
-			case State.RemoveScreen:
+			case ScreenState.RemoveScreen:
 				if (event.type == Transition.EVENT_ENDED)
-					state = State.Run;
+					state = ScreenState.Run;
 				else if (event.type == Transition.EVENT_CHANGE_SCREEN)
 				{	
 					if (auxScreens.length > 0)
 						RemoveScreen(auxScreens.shift());
 				}
-			case State.Run:	
+			case ScreenState.Run:	
 				if (event.type == Transition.EVENT_ENDED)
 				{
 					if (currentScreen != null)
@@ -501,14 +503,16 @@ class ScreenManager
 		currentScreen.HandleBackButtonReleased(e);
 	}
 	
-	public static function StartTransition() : Void
+	public static function StartTransition(newTransition : Transition) : Void
 	{
+		transition = newTransition;
 		if (transition != null)
 			transition.Start();
 	}
 	
-	public static function StartHalfTransition() : Void
+	public static function StartHalfTransition(newTransition : Transition) : Void
 	{
+		transition = newTransition;
 		if (transition != null)
 			transition.StartHalf();
 	}
