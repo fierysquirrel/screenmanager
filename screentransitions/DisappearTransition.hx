@@ -3,9 +3,8 @@ package screentransitions;
 import flash.display.Sprite;
 import flash.events.EventDispatcher;
 
-enum FadeState
+enum DissapearState
 {
-	FadeIn;
 	FadeOut;
 	NoFade;
 }
@@ -14,7 +13,7 @@ enum FadeState
  * ...
  * @author Henry D. Fernández B.
  */
-class FadeTransition extends Transition
+class DisappearTransition extends Transition
 {	
 	/*
 	 * TODO: Hay que tratar de modificar esto por el valor que está en el application.nmml
@@ -41,14 +40,9 @@ class FadeTransition extends Transition
 	 * */
 	static private var MIN_DURATION : Int = 0;
 	
-	/*
-	 * 
-	 * */
-	static private var NUMBER_OF_TRANSITIONS : Int = 2;
+	static private var NUMBER_OF_TRANSITIONS : Int = 1;
 	
-	private var state : FadeState;
-	
-	private var veil : Sprite;
+	private var state : DissapearState;
 	
 	private var duration : Float;
 	
@@ -66,12 +60,7 @@ class FadeTransition extends Transition
 			
 		this.duration = duration;
 		step = (NUMBER_OF_TRANSITIONS * MAX_ALPHA) / (duration * TICKS_PER_SECOND);
-		veil = new Sprite();
-		veil.graphics.beginFill(color);
-		veil.graphics.drawRect(screenX, screenY, screenWidth, screenHeight);
-		veil.graphics.endFill();
-		veil.alpha = MIN_ALPHA;
-		state = FadeState.NoFade;
+		state = DissapearState.NoFade;
 	}
 	
 	/*
@@ -87,22 +76,14 @@ class FadeTransition extends Transition
 		{
 			switch(state)
 			{
-				case FadeState.FadeIn:
-					if (veil.alpha < MAX_ALPHA)
-						veil.alpha += step;
+				case DissapearState.FadeOut:
+					if (screen.alpha > MIN_ALPHA)
+						screen.alpha -= step;
 					else
 					{
-						veil.alpha = MAX_ALPHA;
-						state = FadeState.FadeOut;
-						eventDispatcher.dispatchEvent(new GameEvent(Transition.EVENT_CHANGE_SCREEN,Transition.NAME));
-					}
-				case FadeState.FadeOut:
-					if (veil.alpha > MIN_ALPHA)
-						veil.alpha -= step;
-					else
-					{
-						veil.alpha = MIN_ALPHA;
-						state = FadeState.NoFade;
+						screen.alpha = MIN_ALPHA;
+						state = DissapearState.NoFade;
+						eventDispatcher.dispatchEvent(new GameEvent(Transition.EVENT_CHANGE_SCREEN, Transition.NAME));
 						End();
 					}
 				default:
@@ -114,32 +95,6 @@ class FadeTransition extends Transition
 	{
 		super.Start(screen);
 		
-		screenContainer.addChild(veil);
-		state = FadeState.FadeIn;
-	}
-	
-	override public function StartHalf(screen : GameScreen):Void 
-	{
-		super.StartHalf(screen);
-		
-		veil.alpha = MAX_ALPHA;
-		screenContainer.addChild(veil);
-		state = FadeState.FadeOut;
-	}
-	
-	override public function End():Void 
-	{
-		super.End();
-		
-		screenContainer.removeChild(veil);
-		state = FadeState.NoFade;
-	}
-	
-	override public function SetOnTop():Void 
-	{
-		super.SetOnTop();
-		
-		screenContainer.removeChild(veil);
-		screenContainer.addChild(veil);
+		state = DissapearState.FadeOut;
 	}
 }

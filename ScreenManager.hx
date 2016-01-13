@@ -26,7 +26,7 @@ enum ScreenState
  * Singleton is used to prevent more than one instance of the screen manager class.
  * 
  * @author Henry D. Fernández B.
- */
+ **/
 class ScreenManager
 {
 	/*
@@ -326,6 +326,9 @@ class ScreenManager
 			
 			screens.add(screen);
 			container.addChild(screen);
+			if (state == ScreenState.AddScreen && transition != null)
+				transition.SetOnTop();
+			
 			currentScreen = screen;
 			screen.LoadContent();
 			//This was done to preserve the order on the screen
@@ -395,7 +398,7 @@ class ScreenManager
 				{
 					auxScreens.push(screen);
 					state = ScreenState.AddScreen;
-					transition.Start();
+					transition.Start(screen);
 					//Deactivate screen
 					if(currentScreen != null)
 						currentScreen.SetActive(false);
@@ -421,15 +424,15 @@ class ScreenManager
 			{
 				screen.Exit();
 				
-				if (screen.IsPopup())
+				if (transition == null)
 					RemoveScreen(screen);
 				else
 				{
 					//auxScreen = screen;
 					auxScreens.push(screen);
 					state = ScreenState.RemoveScreen;
-					if(transition != null)
-						transition.Start();
+					//if(transition != null)
+					transition.Start(screen);
 				}
 			}
 		}
@@ -507,13 +510,13 @@ class ScreenManager
 	{
 		transition = newTransition;
 		if (transition != null)
-			transition.Start();
+			transition.Start(currentScreen);
 	}
 	
 	public static function StartHalfTransition(newTransition : Transition) : Void
 	{
 		transition = newTransition;
 		if (transition != null)
-			transition.StartHalf();
+			transition.StartHalf(currentScreen);
 	}
 }

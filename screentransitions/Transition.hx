@@ -54,6 +54,9 @@ class Transition implements ITransition
 	 */
 	private var screenContainer : Sprite;
 	
+	
+	private var screen : GameScreen;
+	
 	public function new(eventDispatcher : EventDispatcher,screenContainer : Sprite) 
 	{
 		isEnded = false;
@@ -97,8 +100,9 @@ class Transition implements ITransition
 	/*
 	 * 
 	 */
-	public function Start() : Void
+	public function Start(screen : GameScreen) : Void
 	{
+		this.screen = screen;
 		isRunning = true;
 		eventDispatcher.dispatchEvent(new GameEvent(EVENT_STARTED,NAME));
 	}
@@ -106,8 +110,9 @@ class Transition implements ITransition
 	/*
 	 * 
 	 */
-	public function StartHalf() : Void
+	public function StartHalf(screen : GameScreen) : Void
 	{
+		this.screen = screen;
 		isRunning = true;
 		//eventDispatcher.dispatchEvent(new GameEvent(EVENT_STARTED,NAME));
 	}
@@ -120,4 +125,7 @@ class Transition implements ITransition
 		isRunning = false;
 		eventDispatcher.dispatchEvent(new GameEvent(EVENT_ENDED,NAME));
 	}
+	
+	public function SetOnTop() : Void
+	{}
 }
