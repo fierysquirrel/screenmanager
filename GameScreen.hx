@@ -218,15 +218,6 @@ class GameScreen extends Sprite implements IGameScreen
 	 * 
 	 * @param event the passed event to be handled.
 	 */
-	public function HandleMouseClickEvent(event : MouseEvent) : Void
-	{
-	}
-	
-	/*
-	 * Handles the event passed from the main.
-	 * 
-	 * @param event the passed event to be handled.
-	 */
 	public function HandleKeyDownEvent(key : UInt) : Void
 	{
 	}
@@ -238,6 +229,19 @@ class GameScreen extends Sprite implements IGameScreen
 	 */
 	public function HandleKeyUpEvent(key : UInt) : Void
 	{
+	}
+	
+	/*
+	 * Handles the event passed from the main.
+	 * 
+	 * @param event the passed event to be handled.
+	 */
+	public function HandleMouseClickEvent(event : MouseEvent) : Void
+	{
+		var mousePos : Point;
+		
+		mousePos = new Point(event.stageX, event.stageY);
+		HandleCursorClick(mousePos,MOUSE_DOWN_ID);
 	}
 	
 	/*
@@ -295,6 +299,11 @@ class GameScreen extends Sprite implements IGameScreen
 	 */
 	public function HandleTouchTapEvent(event : TouchEvent) : Void
 	{
+		var mousePos : Point;
+		
+		//TODO: verify this is actually working as expected
+		mousePos = new Point(event.stageX, event.stageY);
+		HandleCursorClick(mousePos,MOUSE_DOWN_ID);
 	}
 	
 	/*
@@ -334,6 +343,10 @@ class GameScreen extends Sprite implements IGameScreen
 		
 		touchPos = new Point(event.stageX, event.stageY);
 		HandleCursorUp(touchPos,event.touchPointID);
+	}
+	
+	private function HandleCursorClick(cursorPos : Point,cursorId : Int) : Void
+	{
 	}
 	
 	private function HandleCursorDown(cursorPos : Point,cursorId : Int) : Void
