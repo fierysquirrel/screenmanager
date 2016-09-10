@@ -110,6 +110,12 @@ class FadeTransition extends Transition
 		}
 	}
 	
+	public function UpdateVeilSize(width: Float, height : Float) : Void
+	{
+		veil.width = width;
+		veil.height = height;
+	}
+	
 	override public function Start(screen : GameScreen):Void 
 	{
 		super.Start(screen);

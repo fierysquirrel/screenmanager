@@ -176,6 +176,10 @@ class ScreenManager
 	 */
 	public static function Draw(graphics:Graphics) : Void
 	{
+		//Adapt the logic size to the real size
+		if (GraphicManager.ScreenSizeChanged())
+			GraphicManager.Resize();
+			
 		if (currentScreen != null)
 			currentScreen.Draw(graphics);
 		
