@@ -6,7 +6,7 @@ import screentransitions.*;
  * ...
  * @author Henry D. Fernández B.
  */
-
+ 
 class GameScreenEvent extends GameEvent
 {
 	/*

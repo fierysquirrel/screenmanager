@@ -1,7 +1,7 @@
 package;
 
-import aze.display.SparrowTilesheet;
-import aze.display.TileSprite;
+import openfl.display.SparrowTileset;
+import openfl.display.Tile;
 import flash.display.Graphics;
 import flash.display.Sprite;
 import flash.events.Event;
@@ -11,7 +11,6 @@ import flash.events.TouchEvent;
 import flash.geom.Point;
 import flash.text.TextField;
 import openfl.Assets;
-import aze.display.TileLayer.TileBase;
 import screenevents.*;
 import flash.ui.Keyboard;
 
@@ -57,12 +56,12 @@ class GameScreen extends Sprite implements IGameScreen
 	/*
 	 * Sprites.
 	 */
-	private var sprites : Map<String,TileSprite>;
+	private var sprites : Map<String,Tile>;
 	
 	/*
 	 * Tilesheets.
 	 */
-	private var tilesheets : Map<String,SparrowTilesheet>;
+	private var tilesheets : Map<String,SparrowTileset>;
 	
 	/*
 	 * Layers.
@@ -83,7 +82,7 @@ class GameScreen extends Sprite implements IGameScreen
 		isExit = false;
 		isActive = true;
 		layers = new Map<String,Layer>();
-		sprites = new Map<String,TileSprite>();
+		sprites = new Map<String,Tile>();
 		
 		eventDispatcher = ScreenManager.GetEventDispatcher();
 		
@@ -106,8 +105,8 @@ class GameScreen extends Sprite implements IGameScreen
 	{
 		for (k in layers.keys())
 		{
-			while(layers.get(k).children.length > 0)
-				layers.get(k).removeChildAt(0);
+			while(layers.get(k).numTiles > 0)
+				layers.get(k).removeTileAt(0);
 			
 			layers.remove(k);
 		}
@@ -176,8 +175,8 @@ class GameScreen extends Sprite implements IGameScreen
 	 */
 	public function Draw(graphics:Graphics) : Void
 	{
-		for (l in layers)
-			l.render();
+		//for (l in layers)
+			//l.render();
 	}
 	
 	/*
@@ -390,16 +389,16 @@ class GameScreen extends Sprite implements IGameScreen
 	{
 	}
 	
-	public function AddToLayer(key : String,element : TileBase)
+	public function AddToLayer(key : String,element : Tile)
 	{
-		if (layers.get(key).indexOf(element) == -1)
-			layers.get(key).addChild(element);
+		if (layers.get(key).getTileIndex(element) == -1)
+			layers.get(key).addTile(element);
 	}
 	
-	public function RemoveFromLayer(key : String,element : TileBase)
+	public function RemoveFromLayer(key : String,element : Tile)
 	{
-		if (layers.get(key).indexOf(element) != -1)
-			layers.get(key).removeChild(element);
+		if (layers.get(key).getTileIndex(element) != -1)
+			layers.get(key).removeTile(element);
 	}
 	
 	public function HandleBackButtonPressed(e : Event) : Void
@@ -415,7 +414,7 @@ class GameScreen extends Sprite implements IGameScreen
 		if (!layers.exists(key))
 		{
 			layers.set(key, element);
-			//addChild(element.view);
+			addChild(element);
 		}
 	}
 	
@@ -432,8 +431,9 @@ class GameScreen extends Sprite implements IGameScreen
 		orderedLayers.sort(SortLayer);
 			
 		//Layers
-		for (l in orderedLayers)
-			addChild(l.view);
+		//TODO: review if this is still necessary
+		//for (l in orderedLayers)
+			//addChild(l.view);
 	}
 	
 	private function SortLayer(x : Layer,y : Layer) : Int
@@ -450,7 +450,7 @@ class GameScreen extends Sprite implements IGameScreen
 	{
 		if (layers.exists(key))
 		{
-			removeChild(layers.get(key).view);
+			//removeChild(layers.get(key).view);
 			layers.remove(key);
 		}
 	}
@@ -462,8 +462,8 @@ class GameScreen extends Sprite implements IGameScreen
 	
 	private function Render() : Void
 	{
-		for (l in layers)
-			l.render();
+		//for (l in layers)
+			//l.render();
 	}
 	
 	public function TransitionChanged() : Void

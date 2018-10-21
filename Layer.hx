@@ -1,20 +1,19 @@
 package;
 
-import aze.display.behaviours.TileGroupTransform;
-import aze.display.TileLayer;
-import aze.display.TilesheetEx;
+import openfl.display.Tilemap;
+import openfl.display.Tileset;
 
 /**
  * ...
  * @author Fiery Squirrel
  */
-class Layer extends TileLayer
+class Layer extends Tilemap
 {
 	private var order : Int;
 	
-	public function new(tilesheet:TilesheetEx,order : Int = 0, smooth:Bool=true, additive:Bool=false) 
+	public function new(tilesheet : Tileset,  width : Int, height : Int,order : Int = 0, smooth:Bool=true) 
 	{
-		super(tilesheet, smooth, additive);
+		super(width, height,tilesheet, smooth);
 		
 		this.order = order;
 	}
