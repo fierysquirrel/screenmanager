@@ -1,12 +1,12 @@
 {
-  "name": "screenmanager",
+  "name": "Screen Manager",
   "url": "",
   "license": "MIT",
-  "tags": ["openfl","screenmanager"],
+  "tags": ["openfl","screenmanager","screen"],
   "description": "This is the core of the screen system. All screens are managed by this class.",
-  "version": "0.1",
-  "releasenote": "First Release",
-  "contributors": ["henrykun"],
+  "version": "1.1",
+  "releasenote": "Upgraded library to new OpenFL and Haxe",
+  "contributors": ["fierysquirrel"],
   "dependencies": 
   {
     "openfl":"",
